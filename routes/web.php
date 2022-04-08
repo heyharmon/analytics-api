@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 
 use Illuminate\Http\Request; // TODO: Remove
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Http; // TODO: Remove
 
 
 /*
@@ -17,11 +17,11 @@ use Illuminate\Support\Facades\Http;
 |
 */
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+Route::get('/', function () {
+    return view('welcome');
+});
 
-Route::get('/auth/google', function (Request $request) {
+Route::get('/auth', function (Request $request) {
     $client = new Google\Client();
 
     // Setup Google client
@@ -39,7 +39,7 @@ Route::get('/auth/google', function (Request $request) {
     // dd($client);
 });
 
-Route::get('/auth/google/callback', function (Request $request) {
+Route::get('/auth/callback', function (Request $request) {
     $client = new Google\Client();
 
     // Setup Google client
@@ -61,10 +61,10 @@ Route::get('/auth/google/callback', function (Request $request) {
         return redirect($auth_url);
     }
 
-    // dd($client);
+    return redirect('/accounts');
 });
 
-Route::get('/analytics/accounts', function (Request $request) {
+Route::get('/accounts', function (Request $request) {
     $client = new Google\Client();
 
     // Setup Google client
@@ -97,10 +97,12 @@ Route::get('/analytics/accounts', function (Request $request) {
         ];
 	}
 
-    dd($accounts);
+    return view('accounts')
+        ->with('username', $management_accounts->username)
+        ->with('accounts', $accounts);
 });
 
-Route::get('/analytics/properties', function (Request $request) {
+Route::get('accounts/{account_id}/properties', function (Request $request, $account_id) {
     $client = new Google\Client();
 
     // Setup Google client
@@ -125,7 +127,7 @@ Route::get('/analytics/properties', function (Request $request) {
 
     // List properties
     $management_properties = $service->management_webproperties->listManagementWebproperties(
-        $request->account_id
+        $account_id
     );
     $properties = [];
     foreach ($management_properties['items'] as $property) {
@@ -135,10 +137,13 @@ Route::get('/analytics/properties', function (Request $request) {
         ];
     }
 
-    dd($properties);
+    return view('properties')
+        ->with('username', $management_properties->username)
+        ->with('account_id', $account_id)
+        ->with('properties', $properties);
 });
 
-Route::get('/analytics/views', function (Request $request) {
+Route::get('accounts/{account_id}/properties/{property_id}/views', function (Request $request, $account_id, $property_id) {
     $client = new Google\Client();
 
     // Setup Google client
@@ -163,8 +168,8 @@ Route::get('/analytics/views', function (Request $request) {
 
     // List views
     $management_views = $service->management_profiles->listManagementProfiles(
-        $request->account_id,
-        $request->property_id
+        $account_id,
+        $property_id
     );
 	$views = [];
 	foreach ($management_views['items'] as $view) {
@@ -174,10 +179,14 @@ Route::get('/analytics/views', function (Request $request) {
         ];
 	}
 
-    dd($views);
+    return view('views')
+        ->with('username', $management_views->username)
+        ->with('account_id', $account_id)
+        ->with('property_id', $property_id)
+        ->with('views', $views);
 });
 
-Route::get('/analytics/report', function (Request $request) {
+Route::get('/report', function (Request $request) {
     $client = new Google\Client();
 
     // Setup Google client
