@@ -34,9 +34,8 @@ Route::get('/auth', function (Request $request) {
 
     // Create auth url
     $auth_url = $client->createAuthUrl();
-    return redirect($auth_url);
 
-    // dd($client);
+    return redirect($auth_url);
 });
 
 Route::get('/auth/callback', function (Request $request) {
@@ -55,7 +54,6 @@ Route::get('/auth/callback', function (Request $request) {
         $client->authenticate($request->code);
         $token = $client->getAccessToken();
         $request->session()->put('google_access_token', $token);
-        // return redirect('/home')->with('success','you have been authenticated');
     } else {
         $auth_url = $client->createAuthUrl();
         return redirect($auth_url);
@@ -186,7 +184,7 @@ Route::get('accounts/{account_id}/properties/{property_id}/views', function (Req
         ->with('views', $views);
 });
 
-Route::get('/report', function (Request $request) {
+Route::get('accounts/{account_id}/properties/{property_id}/views/{view_id}/dashboard', function (Request $request, $account_id, $property_id, $view_id) {
     $client = new Google\Client();
 
     // Setup Google client
@@ -214,7 +212,7 @@ Route::get('/report', function (Request $request) {
 
     // Required parameters
     $view_id = 'ga:' . $request->view_id;
-    $start_date = $now->modify('-1 month')->format('Y-m-d');
+    $start_date = $now->modify('-3 month')->format('Y-m-d');
 	$end_date = $now->format('Y-m-d');
     $metrics = 'ga:uniquePageviews, ga:avgTimeOnPage';
 
@@ -223,7 +221,7 @@ Route::get('/report', function (Request $request) {
     $options['dimensions'] = 'ga:pagePath';
     $options['filters'] = 'ga:pagePath==/';
     $options['sort'] = '-ga:uniquePageviews';
-    $options['max-results'] = 10;
+    $options['max-results'] = 50;
 
 	$data = $service->data_ga->get(
         $view_id,
@@ -233,13 +231,14 @@ Route::get('/report', function (Request $request) {
 		$options
 	);
 
-    // dd($data);
-
-	$response = [
+	$data = [
 		'items' => isset($data['rows']) ? $data['rows'] : [],
 		'columnHeaders'	=> $data['columnHeaders'],
 		'totalResults'	=> $data['totalResults']
 	];
 
-    dd($response);
+    return view('dashboard')
+        ->with('account_id', $account_id)
+        ->with('property_id', $property_id)
+        ->with('data', $data);
 });

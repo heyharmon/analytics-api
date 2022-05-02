@@ -21,7 +21,7 @@
           <ul>
             @foreach ($views as $view)
                 <li class="border-bottom hoverable">
-                    <a href="/accounts/{{ $account_id }}/properties/{{ $property_id }}/views" class="text-decoration-none">
+                    <a href="/accounts/{{ $account_id }}/properties/{{ $property_id }}/views/{{ $view['id'] }}/dashboard" class="text-decoration-none">
                       <div class="text-component text-space-y-md padding-sm ">
                         <h3 class="text-base color-contrast-higher">{{ $view['name'] }}</h3>
                         <p class="color-contrast-medium text-sm ">View id: {{ $view['id'] }}</p>
